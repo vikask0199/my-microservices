@@ -1,0 +1,23 @@
+# Ignore Git-related files
+# .git
+# .gitignore
+
+# Ignore Docker-related files
+# .dockerignore
+# Dockerfile
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore development and editor files
+.vscode/
+.idea/
+
+# Ignore environment configuration files
+# .env
