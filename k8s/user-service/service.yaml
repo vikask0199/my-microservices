@@ -8,5 +8,5 @@ spec:
     app: user-service
   ports:
   - protocol: TCP
-    port: 80
+    port: 100
     targetPort: 3000

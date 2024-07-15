@@ -22,11 +22,11 @@ spec:
           service:
             name: user-service
             port:
-              number: 80
+              number: 100
       - path: /order
         pathType: Prefix
         backend:
           service:
             name: order-service
             port:
-              number: 80
+              number: 100

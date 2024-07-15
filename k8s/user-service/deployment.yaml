@@ -4,7 +4,7 @@ metadata:
   name: user-service
   namespace: my-microservices
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: user-service
@@ -18,16 +18,78 @@ spec:
         image: user-service:latest
         ports:
         - containerPort: 3000
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"  # Adjust according to your application's needs
         env:
         - name: MONGO_URI
           valueFrom:
             secretKeyRef:
               name: mongodb-secret
               key: mongo-uri
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: PORT
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: user-service
+#   namespace: my-microservices
+# spec:
+#   replicas: 3
+#   selector:
+#     matchLabels:
+#       app: user-service
+#   template:
+#     metadata:
+#       labels:
+#         app: user-service
+#     spec:
+#       containers:
+#       - name: user-service
+#         image: user-service:latest
+#         ports:
+#         - containerPort: 3000
+#         resources:
+#           requests:
+#             memory: "128Mi"
+#             cpu: "100m"
+#           limits:
+#             memory: "256Mi"
+#             cpu: "500m"  # Adjust according to your application's needs
+#         env:
+#         - name: MONGO_URI
+#           valueFrom:
+#             secretKeyRef:
+#               name: mongodb-secret
+#               key: mongo-uri

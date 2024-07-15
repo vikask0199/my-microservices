@@ -8,5 +8,5 @@ spec:
     app: order-service
   ports:
   - protocol: TCP
-    port: 80
+    port: 100
     targetPort: 4000
