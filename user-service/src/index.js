@@ -3,10 +3,15 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+
+const MONGO_URI="mongodb://ms:mstest@192.168.29.104:27017/?authSource=ms_testing"
+const PORT=3000
+
+
 const app = express();
 app.use(bodyParser.json());
 
-mongoose.connect(process.env.MONGO_URI, {});
+mongoose.connect(MONGO_URI, {});
 
 const userSchema = new mongoose.Schema({
   name: String,
@@ -35,7 +40,11 @@ app.get('/user', async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3000;
+app.get('/', async(req, res)=>{
+  res.send('Hello from User Service')
+})
+
+const port = PORT;
 app.listen(port, () => {
   console.log(`User service running on port ${port}`);
 });
