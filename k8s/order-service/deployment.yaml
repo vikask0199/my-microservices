@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service-deployment
-  labels:
-    app: order-service
+  namespace: development
 spec:
   replicas: 2
   selector:

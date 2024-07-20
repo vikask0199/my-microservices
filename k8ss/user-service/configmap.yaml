@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: user-service-config
-  namespace: my-microservices
-data:
-  PORT: "3000"

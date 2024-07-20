@@ -1,19 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: microservices-ingress
-  namespace: my-microservices
+  name: development-ingress
+  namespace: development
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 spec:
-  tls:
-  - hosts:
-    - myapp.example.com
-    secretName: tls-secret
   rules:
-  - host: myapp.example.com
+  - host: dev.example.com
     http:
       paths:
       - path: /user
