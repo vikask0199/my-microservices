@@ -1,3 +1,4 @@
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,3 +20,35 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4000
+
+
+
+
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: order-service-deployment
+#   namespace: development
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: order-service
+#   template:
+#     metadata:
+#       labels:
+#         app: order-service
+#     spec:
+#       containers:
+#       - name: order-service
+#         image: order-service:latest
+#         imagePullPolicy: IfNotPresent
+#         ports:
+#         - containerPort: 4000

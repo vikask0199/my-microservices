@@ -1,3 +1,4 @@
+# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,4 +11,27 @@ spec:
     - protocol: TCP
       port: 100
       targetPort: 4000
-  type: LoadBalancer
+  type: NodePort
+
+
+
+
+
+
+
+
+
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: order-service
+#   namespace: development
+# spec:
+#   selector:
+#     app: order-service
+#   ports:
+#     - protocol: TCP
+#       port: 100
+#       targetPort: 4000
+#   type: LoadBalancer

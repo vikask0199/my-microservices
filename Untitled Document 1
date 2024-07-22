@@ -17,6 +17,9 @@ kubectl get svc -n my-microservices -l app.kubernetes.io/name=ingress-nginx
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/ingress/ingress.yaml
 
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+
+
 # Apply order-service resources
 kubectl apply -f k8s/order-service/configmap.yaml
 kubectl apply -f k8s/order-service/deployment.yaml
