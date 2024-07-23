@@ -9,9 +9,9 @@ spec:
     app: order-service
   ports:
     - protocol: TCP
-      port: 100
+      port: 8080
       targetPort: 4000
-  type: NodePort
+
 
 
 

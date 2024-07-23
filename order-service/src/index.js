@@ -38,7 +38,7 @@ app.get('/order', async (req, res) => {
   }
 });
 
-app.get(',', async(req, res)=>{
+app.get('/', async(req, res)=>{
   res.send('Hello from Order Service')
 })
 

@@ -1,0 +1,14 @@
+# nginx-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: development
+spec:
+  selector:
+    app: nginx-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+

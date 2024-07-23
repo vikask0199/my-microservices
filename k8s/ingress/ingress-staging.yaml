@@ -18,11 +18,11 @@ spec:
           service:
             name: user-service
             port:
-              number: 100
+              number: 8080
       - path: /order
         pathType: Prefix
         backend:
           service:
             name: order-service
             port:
-              number: 100
+              number: 8080
