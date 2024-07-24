@@ -1,0 +1,22 @@
+# development.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-provider-service
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-provider-service
+  template:
+    metadata:
+      labels:
+        app: identity-provider-service
+    spec:
+      containers:
+      - name: identity-provider-service
+        image: identity-provider-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000

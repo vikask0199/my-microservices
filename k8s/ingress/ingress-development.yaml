@@ -6,6 +6,7 @@ metadata:
   namespace: development
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/auth-url: "http://identity-provider-service/auth"
 spec:
   rules:
     - host: dev.example.com
@@ -32,55 +33,5 @@ spec:
                 name: nginx-service
                 port:
                   number: 80
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: development-ingress
-#   namespace: development
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /
-# spec:
-#   ingressClassName: nginx
-#   rules:
-#   - host: dev.example.com
-#     http:
-#       paths:
-#       - path: /user
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: user-service
-#             port:
-#               number: 100
-#       - path: /order
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: order-service
-#             port:
-#               number: 100
+            # annotations:
+            #   nginx.ingress.kubernetes.io/auth-url: "http://identity-provider/auth"
