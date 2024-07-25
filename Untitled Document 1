@@ -1,37 +1,229 @@
-eval $(minikube docker-env)
-docker build -t user-service:latest ./user-service/
+# Create 2-nodes cluster one is the master node and one is the worker node
+# -p=cluster name (Profile)
+# local-cluster is our cutome cluster name
+minikube start --nodes 2 -p local-cluster --driver=docker
 
-sudo snap install helm --classic
-helm version
+# status of cluster
+minikube status -p local-cluster
+# In prodcuction we will not use minikube we will use kubeadm or eks
 
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
+# kubectl syntax
+kubectl[Command][Type][Name][Flags]
+Command-> Create, get Desc, etc
+Type-> pods, services, etc
+Name-> resource
+# exp-> kubectl get pods my-pod -o yaml
+# -o yaml is to get the yaml file of the pod
 
-helm install nginx-ingress ingress-nginx/ingress-nginx --namespace my-microservices --create-namespace
+# get all nodes
+kubectl get nodes
+
+# Get container in nodes
+docker ps
+
+# list down all the cluster
+kubectl config get-contexts
+
+# switch the cluster
+kubectl config use-context minikube
+kubectl config set-context local-cluster
+
+# add node into cluster
+minikube node add --worker -p local-cluster
+
+# delete the node to the cluster
+local-cluster-125dasfd->node name
+minikube node delete local-cluster-125dasfd -p local-cluster
+
+# minikube dashboda
+minikube dashboard
+minikube dashboard --url -p local-cluster
+
+# Yaml-> YAML Ain't Markup Language. It is a serialization language
+# serialization Language-> Whnever two system interacting with each other then need a common file format that is acceptable or readable by both. Yaml is a human readable file format exp yaml json xml 
+
+# What is pods
+# Pod is a group of containers that are running on a node
+
+# create a pods for nginx image
+kubectl run nginx-pod --image=nginx
+
+# List of pods
+kubectl get pods
+
+# get all the resource type that containes pods
+kubectl api-resources | grep pods
+
+# kind
+# kind is a type of object
+# kind-> pod, service, deployment, etc
+
+# Pass the config to the cluster using kubectl
+kubectl apply -f location of config file
+
+# delete the pods
+kubectl delete pods nginx-pod
+
+# Get the pods in the lable
+# filter the pods
+# -o indicate the output format (wide, yaml)
+kubectl get pods -l team=xyz
+kubectl get pods -l team=xyz -o wide
+
+# describe the pods
+kubectl describe pods nginx-pod
+
+# Enter in the pod
+kubectl exec -it nginx-pod -- bash
+# exit for come-out
+
+# Enter a specific container
+kubectl exec -it nginx-pod -- bash -c -- bash
+
+# Access cluster out side the port
+kubectl port-forward nginx-pod 8080:80 (container port: localport)
+
+# Logs of pods
+kubectl logs nginx-pod
+
+# Delete all the resources that is present into the yaml file
+kubectl delete -f nginx-pod.yaml
+
+# PSP respect to pod security policy
+
+# high avalibility of our application
+# we can use replica set
+# Make sure that two pods always runnign with the labels (matchlabels and metadata labels should be same)
+# get all replicas
+# create two worker nodes and if one worker nodes goes down then the pods will execute into third node ((auto healing of the pods))
+kubectl get rs
 
 
-kubectl get pods -n my-microservices -l app.kubernetes.io/name=ingress-nginx
-
-kubectl get svc -n my-microservices -l app.kubernetes.io/name=ingress-nginx
-
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/ingress/ingress.yaml
-
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+# delete node 
+minikube node delete -p (nodename) -p local-cluster
 
 
-# Apply order-service resources
-kubectl apply -f k8s/order-service/configmap.yaml
-kubectl apply -f k8s/order-service/deployment.yaml
-kubectl apply -f k8s/order-service/hpa.yaml
-kubectl apply -f k8s/order-service/service.yaml
-
-# Apply user-service resources
-kubectl apply -f k8s/user-service/configmap.yaml
-kubectl apply -f k8s/user-service/deployment.yaml
-kubectl apply -f k8s/user-service/hpa.yaml
-kubectl apply -f k8s/user-service/service.yaml
+# rollback and rollout
+# we can hahdle the rollout and rollback from  into Deployment object so we dont need to create replicaset manually
+# deployment craete replicaset->replicaset creates pods(Thats why pods is the smallest unit)
+# We can create relicaset manually (through the worker node -> create worker node and if one worker node goes down then pods deploy into another worker nodes)
 
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+# resource type-> pods,service,deplyment
+# delete everything from cluster (like resources and replicaset)
+# all -> target the resources
+# --all -> target the objects and other operations
+kubectl delete all --all
+
+# check that what is remaining and what is deleted
+kubectl get all 
+
+
+# filter the pods as per lable
+kubectl get pods --show-labels
+
+# scale the replicas (resourceType/ resourceName)(Always avoid to do manually)
+kubectl scale --replicas=5 deployment/nginx-deployment
+
+# Whenever we change anything into deployment.yaml and trigger new rollout and new replicaset created the old replica does't deleted and stored by kubernetes and we can rollback old version
+
+# change the version of our applivation manually
+kubectl set image deployment/nginx-deployment nginx-container=nginx:1.21
+
+# list down the history of rollout
+kubectl rollout history deployment/nginx-deleted
+
+# change cause record the changes after new version change(record the annotation)
+kubectl set image deployment/nginx-deployment nginx-container=nginx:1.20 --record
+
+# always try to annotate into deploymemt file
+annotation:
+    kubernetes.io/change-cause: "Updating the version of our applivation"
+
+# Roll back to the previous version or application
+# Revision -> whenever you check the rollout history then you will get the revision hitory (Change version)
+kubectl rollout undo deployment/nginx-deployment --to-revision=1
+# after that you can check the pods for the rollout affected or not 
+kubectl describe pod nginx-deploymemt-nvjfxbhk | grep image
+
+# Whenever a pod is assigned into the node the kube proxy agent allocate one ip to the pod or replica and these you can not access outside the cluster to resolve this issue service comes into picture
+# If pods ip will change then service always target to appropriate ip of the pods
+# service Provide load balancing 
+# service is the entry point of the application
+# Service follows zero down time deployments
+
+# Cluset ip service -> Ip cannot be accessed out the cluster if you want to access the service u can call that service into a pod just using a command
+kubectl exec -it podName --sh
+curl clusterIP:port
+# You can access through the name of the sevice
+curl service-name:port
+
+# port forwording of cluster
+kubectl port-forword service/nginx-service 8083:8082
+
+# Get the log of pod name
+kubectl logs podName
+
+# Get the pods associate with service
+kubectl get endpoints
+
+# Describe service
+kubectl describe service/nginx-service
+
+# U can use type node port so you can access out side the cluster on  your system 
+# range of node port is (30000, 32767)
+
+# We need an ingress controller to process the ingress rule
+# Nginx ingrss controller and treafik and istio and HAProxy
+# Enable ingress controller using cluster name
+minikube addons enable ingress -p cluster-name
+
+# get pods in namespace default namespace is ingress-nginx
+kubectl get pods -n cluster-name
+
+# in this case nginx create a node port service you can see the command using(add namespace at the end) if you are cluod it will create load balancer service intead of creating node port and this load balancer act as a entry point.
+kubectl get svc -n ingress-nginx
+
+# you can get the service info of ingress using
+kubectl api-resources | grep ingress
+
+
+# upadate the hosts database in system
+sudo nano ./etc/hosts
+# add here IP minikube ip and baseurl like 
+
+192.168.49.2 nginx-demo.com
+# after that close the file 
+
+# add annotation here (any path define after the url that is use just for only identifire like http://todo.com/api/api/todos convert into http://todo.com/api/todos)
+# path: /api/(.*)
+annotations:
+    nginx-ingress-kubernetes.io/rewrite-target: /$1
+
+# To get all the urls
+kubectl get ingress -n ingress-nginx
+
+# In host based routing we are configure multiple host and whitelist the host ip service into hosts db after that you can access the endpoint through the host and no need to annotations
+# If non of path patches then request goes to default http backend hosted on port 80
+
+
+# generate self sign certificate 
+openssl req -x509(typeofcertificate) -newkey rsa:4096(type) -sh256(algorithem) -nodes(no need password) -keyout tls.key -out tls.crt -subj "/CN=nginx-demo.com"(target domain) -days 365 (expiration date)
+# now share this certificate to the ingress rule (all the dots replace by hyphon)
+kubectl create tls  nginx-demo-com-tls --cert tsl.crt --key tls.key
+# add into spec
+tsl: 
+    -secretName: nginx-demo-com-tls
+    hosts:
+        - "nginx-demo.com"
+# after that apply the configuration and if you are unable to access the page after clicking on advanced then write thisisunsafe
+
+# namespace basically use to group the application
+# deafult namespaces
+# default-> Resources when dont need to specify namespace explicitly
+# kube-system-> system resources
+# kube-public-> resources that are public
+# kube-node-lease-> lease resources
+
+
 
