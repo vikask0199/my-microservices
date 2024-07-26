@@ -221,9 +221,200 @@ tsl:
 # namespace basically use to group the application
 # deafult namespaces
 # default-> Resources when dont need to specify namespace explicitly
-# kube-system-> system resources
-# kube-public-> resources that are public
-# kube-node-lease-> lease resources
+# kube-system-> This is the name space is for object created by controle plane.
+# kube-public-> These resource are use to public resources. and not recomondede to use by user. this namse space is open to all users with read onlly access. 
+# kube-node-lease-> Contains lease resource to send heartbeats of node. every node having a lease object. These lease object send heartbeats to the controle plane to help our cluster to determine the  avalibility of each node and take action when failures are detected. and each node associated with leas object
+
+# create namespace
+kubectl create namespace nginx-demo
+
+# get all namespace
+kubectl get all
+kubectl get all --all-namespaces
+
+# get all resources for namespace
+kubectl  get all -n nginx-demo
+# if your are not giving the namespace then it will return records from default namespaces
+
+# chnage current active namespace it set by default namespace
+kubectl config set-context --current --namespace=nginx-demo
+
+# if you are into another namespaces and you want to access the resource of different namespace you can try 
+kubectl exec -it pod/nginx-yhfghsg -- sh
+curl todo-api-service:8080/api/todos (in this case you are unable to access the service that is running into different pod)
+curl todo-api-service.(write the name of namespace you want to access like -> .todo.svc.cluster.local or you can go with .todo only):8080/api/todos
+
+# delete namespace
+kubectl delete ns namespaceName
+
+# mongo db setup (create service and deployment)
+kubectl port-forword svc/mongo-svc 32000:27017
+# Enter inside the mongo pod
+kubectl exec -it pod/mongo-0 -- /bin/bash
+# check the process which mongo are running mongo db running into something PID
+ps aux | grep mongo
+ps aux
+kill PID(mongodb PID) 
+# if you will check the pod again  you will get that restart the conatiner not pod (So in this case whenevere container or craeted and deleted then data also deleted so we will store the data at thr pod level)
+# To resolve this kubernets give a volume with the name of emptyDir
+# emptyDir-> This is the volume which is created when pod is created and deleted when pod is deleted
+# We will craete a volume in mongo deployment and mount the volume  with mongo container in mongo deployment
+# we can mount the same volume with different containers
+# if you are changing anything into the deployment file you need to do port-forwording again
+# all the data store into (localtion where the pod is ruinnig)
+# check
+minikube ssh
+sudo ls /var/lib/kubelet/pods
+# you will get the list of pod id
+kubectl get pod -o yaml
+# you will get the pod uid and use into below command
+kubectl get pod podname -o jsonpath='{.metadata.uid}'
+# you will get the perticuler pod id using uppar command and uuid
+sudo ls /var/lib/kubelet/add here pod id
+# container host plugin volume
+# list down the volume
+sudo ls /var/lib/kubelet/podid/volumes
+# you will get the list of volume and emptyDir
+sudo ls /var/lib/kubelet/podid/volumes/kubernates.io~empty-dir
+# This is not a perfect solution to store data into the emptyDir because if the pod is deleted then data will be deleted also to resolve this is hostPath comes into the picture
+# upadte the mognodb deployement and update the emptyDir with host path and upadte everything into as per kubernets documentation
+# in this case if the pods rinning into different node so then can not share the same mongodb to the with all pods if the node is deleted then data is deleted
+# to resolve this issue we will use Persistent volume. Kubernets offer three persist data to prevent the dataloss (Persistent Volume, Persistent volume claim, Storage class) (AWS EBS, NFS server )
+# setup persistent volume
+# create Deployemnt file (You will get the basic info about persistence volume)
+kubectl api-resource | grep Persistent
+# Persistnet valume -> We can create multiple persistent valume into the cluster but how do we use this persistent volume into mongo pod that we have created on cloud so to resolve this persistent volume comes into the picture
+# Persistnet valume claim -> this is another resources of kubernets this is maintain how much storage our pod needs we can not use persistent volume into the directly pod
+kubectl get PersistnetVolumes
+# create mongo pvc
+kubectl create -f mongo-pvc.yaml
+kubectl get pvc
+# if the directoy not found into the minikube node
+minikube ssh
+mkdir /storage/data -p
+# delete the pvc
+kubectl delete pvc mongo-pvc
+# We can not deleet direclty first we need to delete the pod
+kubectl delete -f deployment.yaml
+# You will see the pv
+kubectl get pv
+# if pv status is released then the connection  between pvc and pv ditrurrupted. If you want to delete the pv just 
+kubectl delete pv pvName
+# first deploy pv.yaml then pvc.yaml then deploy the respceted service and then expose the pv port
+# If you want to access the mongo then shortcut command
+ctrl+r 
+# The pod is created ny the dEVELOPER AND pv craeted by the administator. In this case pods created dynamicallly whenever need pv to resolve this storage class comes into the picture
+# Storage class define that how the pvs created dynamically 
+# Basic info of storage 
+kubectl api-resources | grep Storage
+# Check the persistent volume claim and persistent volume
+kubectl api-resources | grep Persistent
+# Get the storage 
+kubectl get sc
+# standard storage class always created whenever cluster is craeted its default
+# whenever you craete the storage class after that you can create the pvc volume and after craeting pvc volume the new pc craeted automatically
+kubectl get pv
+
+
+# statful and stateless
+# Each pods have own persistent volume 
+# cluster IP is none is called hedless service
+# After apply none each pod has its dns service
+mongo-0.mongo.deafult.svc.cluster.local:27017
+# mongo-o => PondName
+# mongo => service name
+# deafult => namespace
+# svc.cluster.local => cluster name
+# 27017 => port
+
+# get basic info statfulset
+kubectl api-resources | grep statefulset
+# apply statefulset
+kubectl apply -f statefulset.yaml
+# check what is going on after applying statefulset
+kubectl get pods -w
+# scale maunally
+kubectl scale sts mongo --replicas=10
+kubectl scale sts mongo --replicas=3
+# pods delete automatically 
+mongo delete po mongo-0
+# get all persistence volume claim
+kubectl get pvc
+# Total number of persistente volume created is the max number of replicas statefulset
+# Describe the pod
+kubectl describe po mongo-0 | grep volume
+# whenever service is stopped and restart then the same persistent apply to the same pod
+# enter the mongo-0 pod
+kubectl exec -it mongo-0 -- mongo
+
+# we can not access direclty mongo db out side the cluster
+# we have to follow rs initiate command into pod
+# rs.initiate(
+#     {
+#         _id: "rs0",
+#         members: [
+#             { _id: 0, host: "mongo-0.mongo.default.svc.cluster.local:27017},
+#             { _id: 1, host: "mongo-1.mongo.default.svc.cluster.local:27017}
+#         ]
+#     }
+# )
+rs.status()
+# use test db add record into db and go to secondry node
+kubectl exec -it mongo-1 -- mongo
+# first enable the reads
+rs.slaveOk()
+# after that get the record from the database
+
+# kubectl provides two special type volume
+# Provide the dynamic cofiguration through the config map
+# get basic info of configmap
+kubectl api-resources | grep configmap
+# Apply configmap
+# get configmap
+kubectl get cm
+# and use the config map into deployament or service file
+# check the config amp mounted correectly mounted or not
+kubectl exec -it mongo-0 -- bash
+# see configuration file is mounted or not
+cat /etc/mongo/mongodb.conf
+# configmap can not update env variable automatically so restart the pod and you will get the environment varibale automatically
+# if not updated then delete the pod and pod is automatically create and is this case u will get the config map automatically update the configmap
+# provide the encrypted password
+echo -n password | base64
+# After generated the password apply into mongo-secret.yaml and update the statefulset.yaml
+kubectl exce -it mongo-0 -- /bin/sh
+# You can get the env data directly type env inside the bash
+env
+# now you can chnage the password directly
+echo -n password123 | base64
+# docode the password 
+echo -n bdbjhfkjhksdj | base64 --decode
+# Its your choice to choose configmap or secret
+
+# Probes-> Basically its define the behaviour and autohealing of the resouces
+# Through the probes kubernets investigate the pods working correctly or not
+# Liveness probe-> It check the pod is working correctly or not(it returns 1=Failure, 0=Healthy) you have to setup the command into statefulset.yaml or deployment.yaml
+# Readiness probe-> It check the pod is ready to accept the request or not(It returns the success and failed)(if pod return the failed then rediness prob remove the connection to that pod until the pod is not resturn to success at these time pod is not getting any traffic) as rediness failed the pod is removed from the service
+# Startup probe-> It check the pod is ready to accept the request or not(its define the delay of the execution of Liveness probe and rediness probe not sending any probes until the container is  not returned that container is ready to accept the probes and request) if statrtup probes is success then rediness and liveness probe is execute
+# You can update restart policy as per your requirment
+
+# cpu/memory
+# 1cpu = 1vCPU in Aws
+# 1cpu = 1Core in GCP
+# 1cpu = 1VCore in Azure
+# 1cpu = 1Hyperthread on bare-metal
+# cpu is compressible
+# memory is not compressable
+# If the process take the maximum memory process will be killed
+# You can not update the hardware that you have allocated during memery allocation and CPU allocation
+#  you can seee the matric but first you have to enable matric server
+minikube addons enable metrics-server
+# you can see the matric server is running AND OPEN THE TOP  POD MEMORY USAGES 
+kubectl top pods
+# with the help of Resource quota we can define the namesapace limits and no of deployments and memory usage and property of 
+
+# kubernets scheduler are responsible to craete the pod 
+
 
 
 
