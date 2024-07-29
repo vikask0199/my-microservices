@@ -1,0 +1,113 @@
+# developed by Redhat
+# it is free and open source
+# it is used to manage multiple servers from a single interface
+# it is used to automate tasks and workflows
+# it is highly scalable
+# it is highly customizable
+# Integration with other tools
+
+# There are three components
+# 1. Inventory
+# 2. Modules
+# 3. Playbook
+
+# Module -> Small program to do task.(Intsall Nginx, Start docker, start server, create file etc). Ansible usage YAML
+# Inventory -> Server details
+# Playbook -> It is user to perform the task
+
+# We need to access all the remove server without password
+ssh-keygen
+# Enter and install
+ssh-copy-id 10.21.58.11(remote server ip address)
+# You will get that number of key generated 1
+# now whenever you can login into remote server without password
+
+# To install the ansible on remote server
+https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu
+# check it is working or not
+ansible all -m ping
+ansible localhost -m ping
+# ERROR: Ansible requires the locale encoding to be UTF-8; Detected ISO8859-1.
+sudo locale-gen en_US.UTF-8
+sudo nano /etc/default/locale
+# update the file
+LANG=en_US.UTF-8
+LANGUAGE=en_US:en
+LC_ALL=en_US.UTF-8
+# run these command
+sudo update-locale LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
+locale
+ansible localhost -m ping
+
+
+# Update ansible config
+cd /etc/ansible/
+sudo ansible-config init --disabled | sudo tee ansible.cfg
+less ansible.cfg
+# /etc/ansible/ansible.cfg
+# /etc/ansible/hosts
+
+# creating a simple playbook you can create any location
+cd /etc/ansible/
+mkdir playbooks
+cd playbooks
+# create a ymal first_pb.yaml
+# Run
+ansible-playbook first_pb.yaml
+
+# check yaml file
+ansible-playbook --syntax-check first_pb.yaml
+# Its executing line by line
+# first install nginx into localsystem after success full installation run nginx(remamber install nginx using playbook.yaml)
+
+
+# To Perform the operation into remote server provide the ip into hosts below the [webservers]
+# You can group the servers
+# In side hosts you can see the name of group server ([webservers])
+# After adding the remote server ip check it is perfeclty working or not 
+ansible-inventory --list
+# hit the remote server
+ansible all -m ping
+# install nginx on remote server (before installing check the hosts file that remote server ip available or not and update the playbooks.yaml with the localhost to remote server ip)
+systemctl status nginx
+
+# apply the same image to all remote server from my local syatem using copy module (src and dest)
+# check that who is able to access the file that you have shared
+ls -l myfile.txt
+# update the yml file and as per user you can give the access
+# whenever you are try to copy file from src to dest then you will see on your each update the remote server file also updating as per your command so i want if i update the file then previous will backup automatically
+
+# file module
+# You can change the file name and permission and craete new file into remote server
+# To see the file name and directory and access
+ls -ltr
+# you can generate the log after run the script present into remote server
+
+
+# Cron Job in remote server
+# Check cron tab is there in directory
+crontab -l
+# create cron.yaml
+# remove cron.yaml
+# you can also enable and disable
+
+# You can create multiple user onto multiple server
+# You can create multiple group onto multiple server
+# try to give encrypted password to all the user
+password: "{{'Abc@vikas' | password_hash('sha512')}}"
+# start nginx server
+systemctl start nginx
+# You will get some ports and see the ports using pgrep
+pgrep nginx
+# kill the server using 
+pgrep nginx | xargs kill
+
+# using alsible to kill the process
+# you can download the file
+# enable service firewall
+# disable service firewall
+
+# Ad hoc task to check something into server no need to craete playbook we can directlty run the command and get the info. syntax
+ansible <host-pattern> -m <module> -a "module arguments" -u <username> -b
+ansible localhost -m copy -a "src=/home/hello.txt dest=/temp/" -b --ask-become-pass
+# Role into ansible

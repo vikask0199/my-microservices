@@ -33,5 +33,3 @@ spec:
                 name: nginx-service
                 port:
                   number: 80
-            # annotations:
-            #   nginx.ingress.kubernetes.io/auth-url: "http://identity-provider/auth"
